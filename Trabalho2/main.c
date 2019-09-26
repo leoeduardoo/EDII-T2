@@ -10,15 +10,16 @@
 
 int main(void)
 {
-    struct index index[10];
+    //guarda a quantidade de registros a serem inseridos
+    int quant_registros_insere = contaRegistrosEntrada();
+    
+    //declara a struct index
+    struct index index[quant_registros_insere];
     
     //seta todas as posições como '\0'
     memset(&index,(char)'\0',sizeof(index));
     
-    criaListaIndice(index);
-    
-    //guarda a quantidade de registros a serem inseridos
-    int quant_registros_insere = contaRegistrosEntrada();
+    criaIndice(index);
     
     //declara a struct cadastro
     struct cadastro cadastro[quant_registros_insere];
