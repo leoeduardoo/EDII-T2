@@ -61,7 +61,7 @@ void compacta(FILE * arquivo);
 bool arquivoCarregado(struct cadastro *cadastro);
 
 //cria indice
-void criaListaIndice(struct index *index);
+void criaIndice(struct index *index);
 
 //escreve no indice
 void escreveIndice(char buffer[], int offset);
@@ -71,5 +71,8 @@ void atualizaIndice(struct index *index, char buffer[], int offset);
 
 //retorna o offset do registro no arquivo saida.bin
 int pegaOffset(void);
+
+//conta quantos registros tem no arquivo de indice
+int contaRegistrosIndice(void);
 
 #endif /* header_h */

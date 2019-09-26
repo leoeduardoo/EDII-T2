@@ -53,48 +53,73 @@ void escreveIndice(char buffer[], int offset){
 }
 
 //cria indice
-void criaListaIndice(struct index *index){
+void criaIndice(struct index *index){
     
     FILE *indice;
-    abreArquivo(&indice, "r+", "indice.bin");
+    FILE *saida;
+    abreArquivo(&indice, "w", "indice.bin");
+    abreArquivo(&saida, "r+", "saida.bin");
     
-    rewind(indice);
+    rewind(saida);
     
-    //armazena dados lidos de indice.bin
-    char buffer[3];
+    //pula o header e '\n'
+    fseek(saida, 4, 1);
     
-    int offset = 0;
+    //buffer para armazenar os dados de saida.bin
+    char buffer[10];
+    char buffer_tam[10];
+    char buffer_cod[3];
     
-    char caractere;
+    //offset iniciando em 4 simulando leitura do header
+    int offset = 4;
     
-    //i para as posiçõe do buffer e j para as posições do index
-    int i = 0;
-    int j = 0;
+    //tamanho dos registros
+    int tamanho = 0;
     
-    while(!((caractere = fgetc(indice)) == EOF)){
+    char caractere = '\0';
+    
+    while(caractere != EOF){
         
         //limpa o buffer preenchendo com '\0'
         memset(buffer,(char)'\0',sizeof(buffer));
         
-        //preenche o buffer com cod_segurado
-        for (i = 0; i < 3; i++){
+        //limpa o buffer_tam preenchendo com '\0'
+        memset(buffer_tam,(char)'\0',sizeof(buffer_tam));
+        
+        //preenche o buffer com o tamanho e cod_segurado de saida.bin
+        int i = 0;
+        for (i = 0; (caractere = fgetc(saida)) != '#'; i++) {
+            
+            if(caractere == EOF){
+                break;
+            }
             buffer[i] = caractere;
-            caractere = fgetc(indice);
+            
+            
         }
         
-        ungetc(caractere, indice);
-        
-        fscanf(indice, "%d", &offset);
-        
-        //atualiza o indice
-        index[j].cod_segurado[0] = buffer[0];
-        index[j].cod_segurado[1] = buffer[1];
-        index[j].cod_segurado[2] = buffer[2];
-        index[j].offset = offset;
-        
-        j++;
-        
-        caractere = fgetc(indice);
+        if(caractere != EOF){
+            //volta 3 posições referente ao cod_segurado
+            i -= 3;
+            
+            //preenche o buffer_tam para usar no sscanf
+            for (int j = 0; j < i; j++) {
+                buffer_tam[j] = buffer[j];
+            }
+            
+            //preenche o buffer_cod
+            for (int j = 0; j <= i; j++) {
+                buffer_cod[j] = buffer[j+2];
+            }
+            
+            sscanf(buffer_tam, "%d", &tamanho);
+            escreveIndice(buffer_cod, offset);
+            atualizaIndice(index, buffer_cod, offset);
+            
+            offset += tamanho;
+            
+            fseek(saida, offset, 0);
+        }
     }
 }
 
@@ -121,6 +146,28 @@ int contaCharBuffer(char * buffer){
         i++;
     }
     return total_caracteres;
+}
+
+//conta quantos registros tem no arquivo de indice
+int contaRegistrosIndice(){
+    
+    FILE *indice;
+    
+    abreArquivo(&indice, "r", "indice.bin");
+    
+    char caractere = '\0';
+    
+    //armazena a quantidade de registros
+    int quant_registros = 0;
+    
+    while((caractere = fgetc(indice)) != EOF){
+        //encontrou # significa que tem registro
+        if (caractere == '#'){
+            quant_registros++;
+        }
+    }
+    
+    return quant_registros;
 }
 
 //conta quantos registros tem no arquivo de entrada para serem inseridos
