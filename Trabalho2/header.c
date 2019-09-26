@@ -371,20 +371,46 @@ void abreArquivo (FILE** arquivo, char *flag, char *nome_arquivo){
 void dump (){
     
     FILE *saida;
+    FILE *indice;
     
-    abreArquivo(&saida, "r+", "saida.bin");
+    abreArquivo(&saida, "r", "saida.bin");
+    abreArquivo(&indice, "r", "indice.bin");
     
     char value;
     
-    while (!feof(saida)){
-        value = fgetc(saida);
-        
-        if (isprint(value)){
-            //%x imprime em hexadecimal
-            printf("%x ", value);
+    int op = 0;
+    do{
+        printf("\nEscolha um arquivo para o dump:\n");
+        printf("\n\t1. Principal");
+        printf("\n\t2. Indice Primario");
+        printf("\n\t3. Indice Secundario\n");
+        printf("\nDigite uma opcao: ");
+        fflush(stdin);
+        scanf(" %d", &op);
+    }while (op > 3 || op < 1);
+    
+    if (op == 1){
+        while (!feof(saida)){
+            value = fgetc(saida);
+            
+            if (isprint(value)){
+                //%x imprime em hexadecimal
+                printf("%x ", value);
+            }
+        }
+    }
+    if (op == 2){
+        while (!feof(indice)){
+            value = fgetc(indice);
+            
+            if (isprint(value)){
+                //%x imprime em hexadecimal
+                printf("%x ", value);
+            }
         }
     }
     
+    fclose(indice);
     fclose(saida);
     
 }
