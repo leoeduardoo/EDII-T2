@@ -8,6 +8,46 @@
 
 #include "header.h"
 
+//ordena o indice
+void keysortIndice(struct index *index, int tamanho_index){
+    
+    //verifica se existe dados no índice
+    if (index[0].cod_segurado[0] != '\0'){
+        
+        int codigo_a, codigo_b = 0;
+        
+        for (int i = 0; i < tamanho_index; i++){
+            for (int j = 0; j < tamanho_index; j++){
+                sscanf(index[j].cod_segurado, "%d", &codigo_a);
+                sscanf(index[i].cod_segurado, "%d", &codigo_b);
+                
+                //verifica se o código é maior que o anterior
+                if (codigo_a > codigo_b){
+                    
+                    //armazena as informações em temp
+                    char temp_cod_segurado[4];
+                    int temp_offset = 0;
+                    temp_cod_segurado[0] = index[i].cod_segurado[0];
+                    temp_cod_segurado[1] = index[i].cod_segurado[1];
+                    temp_cod_segurado[2] = index[i].cod_segurado[2];
+                    temp_offset = index[i].offset;
+                    
+                    //inverte
+                    index[i].cod_segurado[0] = index[j].cod_segurado[0];
+                    index[i].cod_segurado[1] = index[j].cod_segurado[1];
+                    index[i].cod_segurado[2] = index[j].cod_segurado[2];
+                    index[i].offset = index[j].offset;
+                    
+                    index[j].cod_segurado[0] = temp_cod_segurado[0];
+                    index[j].cod_segurado[1] = temp_cod_segurado[1];
+                    index[j].cod_segurado[2] = temp_cod_segurado[2];
+                    index[j].offset = temp_offset;
+                }
+            }
+        }
+    }
+}
+
 //atualiza indice
 void atualizaIndice(struct index *index, char buffer[], int offset){
     int i = 0;
@@ -21,7 +61,6 @@ void atualizaIndice(struct index *index, char buffer[], int offset){
     index[i].cod_segurado[1] = buffer[1];
     index[i].cod_segurado[2] = buffer[2];
     index[i].offset = offset;
-    
 }
 
 //retorna o offset do registro no arquivo saida.bin

@@ -75,4 +75,7 @@ int pegaOffset(void);
 //conta quantos registros tem no arquivo de indice
 int contaRegistrosIndice(void);
 
+//ordena o indice
+void keysortIndice(struct index *index, int tamanho_index);
+
 #endif /* header_h */

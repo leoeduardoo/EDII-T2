@@ -19,7 +19,11 @@ int main(void)
     //seta todas as posições como '\0'
     memset(&index,(char)'\0',sizeof(index));
     
+    //cria o indice quando o programa é inicializado
     criaIndice(index);
+    
+    //ordena o indice
+    keysortIndice(index, quant_registros_insere);
     
     //declara a struct cadastro
     struct cadastro cadastro[quant_registros_insere];
@@ -45,6 +49,7 @@ int main(void)
             case 1:
                 if (arquivoCarregado(cadastro)){
                     insereRegistro(cadastro, index);
+                    keysortIndice(index, quant_registros_insere);
                 }
                 break;
                 
