@@ -28,6 +28,7 @@
 		B3527A3F2337DE790001160A /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		B3527A592337DF470001160A /* header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = header.h; sourceTree = "<group>"; };
 		B3527A5A2337DF470001160A /* header.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = header.c; sourceTree = "<group>"; };
+		B35F5F9A233CDCE30095D160 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +61,7 @@
 		B3527A3E2337DE790001160A /* Trabalho2 */ = {
 			isa = PBXGroup;
 			children = (
+				B35F5F9A233CDCE30095D160 /* README.md */,
 				B3527A5A2337DF470001160A /* header.c */,
 				B3527A592337DF470001160A /* header.h */,
 				B3527A3F2337DE790001160A /* main.c */,
