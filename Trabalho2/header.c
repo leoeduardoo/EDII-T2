@@ -8,6 +8,112 @@
 
 #include "header.h"
 
+//busca por chave primaria
+void buscaChavePrimaria(struct index *index, struct busca_p *busca_p){
+    
+    FILE *buscado_p;
+    FILE *saida;
+    
+    abreArquivo(&buscado_p, "r+", "buscado_p.bin");
+    abreArquivo(&saida, "r", "saida.bin");
+    
+    //contador das posições da struct busca_p
+    int i = 0;
+    
+    //contador das posições da struct index
+    int j = 0;
+    
+    //char para guardar a informação lida de inserido.bin
+    char cod_segurado_buscado[4];
+    
+    //char para ler o tamanho do registro em saida.bin
+    char buffer_tam[3];
+    
+    //char para armazenar o tamanho
+    char buffer[TAM_REG_ENTRADA];
+    
+    char caractere = '\0';
+    
+    //tamanho do registro
+    int tamanho = 0;
+    
+    //limpa a struct preenchendo tudo '\0'
+    memset(cod_segurado_buscado,(char)'\0',sizeof(cod_segurado_buscado));
+    
+    //limpa a struct preenchendo tudo '\0'
+    memset(buffer_tam,(char)'\0',sizeof(buffer_tam));
+    
+    //limpa a struct preenchendo tudo '\0'
+    memset(buffer,(char)'\0',sizeof(buffer));
+    
+    //enquanto puder ler em buscado_p.bin significa que já foi feita a busca e encontra código válido
+    while(fread(cod_segurado_buscado, sizeof(cod_segurado_buscado), 1, buscado_p)){
+        if (busca_p[i].cod_segurado[2] == cod_segurado_buscado[2] &&
+            busca_p[i].cod_segurado[1] == cod_segurado_buscado[1] &&
+            busca_p[i].cod_segurado[0] == cod_segurado_buscado[0]){
+            //printf("Codigo %.3s ja buscado, procurando novo codigo.\n", index[i].cod_segurado);
+            i++;
+        }
+    }
+    
+    if(busca_p[i].cod_segurado[2] == '\0'){
+        printf("Nao ha mais registro para buscar.\n");
+    }else{
+        //escreve em buscado_p.bin o cod_segurado ja buscado
+        fwrite(busca_p[i].cod_segurado, sizeof(index[i].cod_segurado), 1, buscado_p);
+        
+        while(busca_p[i].cod_segurado[2] != index[j].cod_segurado[2]){
+            if (busca_p[i].cod_segurado[1] != index[j].cod_segurado[1]){
+                j++;
+                continue;
+            }
+            if (busca_p[i].cod_segurado[0] != index[j].cod_segurado[0]){
+                j++;
+                continue;
+            }
+            
+            j++;
+        }
+    }
+    
+    fseek(saida, index[j].offset, 0);
+    
+    //preenche o buffer com o tamanho e cod_segurado de saida.bin
+    for (i = 0; (caractere = fgetc(saida)) != '#'; i++) {
+        
+        if(caractere == EOF){
+            break;
+        }
+        buffer[i] = caractere;
+    }
+    
+    //volta 3 bytes do cod_segurado
+    i -= 3;
+    
+    //preenche o buffer_tam
+    for (int j = 0; j < i; j++) {
+        buffer_tam[j] = buffer[j];
+    }
+    
+    fseek(saida, index[j].offset, 0);
+    
+    sscanf(buffer_tam, "%d", &tamanho);
+    
+    for (i = 0; i < tamanho; i++) {
+        caractere = fgetc(saida);
+        
+        if (caractere != '#'){
+            printf("%c", caractere);
+        }else{
+            printf(" ");
+        }
+    }
+    printf("\n");
+    
+    fclose(buscado_p);
+    fclose(saida);
+}
+
 //ordena o indice
 void keysortIndice(struct index *index, int tamanho_index){
     
@@ -163,13 +269,28 @@ void criaIndice(struct index *index){
 }
 
 //verifica se já carregou os arquivos para a struct
-bool arquivoCarregado(struct cadastro *cadastro){
-    if ((void*) strlen(cadastro[0].cod_segurado) == NULL){
-        printf("Carregue os arquivos de entrada primeiro (opcao 5).\n");
-        return false;
-    }else{
-        return true;
+bool arquivoCarregado(struct cadastro *cadastro, struct busca_p *busca_p, int p){
+    //cadastro -> p = 1
+    //busca_p -> p = 2
+    
+    if (p == 1){
+        if ((void*) strlen(cadastro[0].cod_segurado) == NULL){
+            printf("Carregue os arquivos de entrada primeiro (opcao 5).\n");
+            return false;
+        }else{
+            return true;
+        }
     }
+    if (p == 2){
+        if ((void*) strlen(busca_p[0].cod_segurado) == NULL){
+            printf("Carregue os arquivos de entrada primeiro (opcao 5).\n");
+            return false;
+        }else{
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 //conta somente os caracteres no buffer
@@ -187,24 +308,23 @@ int contaCharBuffer(char * buffer){
     return total_caracteres;
 }
 
-//conta quantos registros tem no arquivo de indice
-int contaRegistrosIndice(){
+//conta quantos registros tem no arquivo de busca_p
+int contaRegistrosBusca_p(){
     
-    FILE *indice;
+    FILE *busca_p;
     
-    abreArquivo(&indice, "r", "indice.bin");
+    abreArquivo(&busca_p, "r", "busca_p.bin");
     
-    char caractere = '\0';
-    
-    //armazena a quantidade de registros
+    char registro[4];
     int quant_registros = 0;
     
-    while((caractere = fgetc(indice)) != EOF){
-        //encontrou # significa que tem registro
-        if (caractere == '#'){
-            quant_registros++;
-        }
+    //descobre quantos registros têm no arquivo para salvar na struct
+    while (fread(&registro,sizeof(char),4,busca_p))
+    {
+        quant_registros++;
     }
+    
+    fclose(busca_p);
     
     return quant_registros;
 }
@@ -390,14 +510,19 @@ void insereRegistro(struct cadastro *cadastro, struct index *index){
 }
 
 //função para ler o arquivo de entrada e passar os registros para memória (struct)
-void carregaArquivos(struct cadastro *cadastro, int quant_registros_insere){
+void carregaArquivos(struct cadastro *cadastro, struct busca_p *busca_p, int quant_registros_insere, int quant_registros_busca_p){
     
     FILE *insere;
+    FILE *arq_busca_p;
     
     abreArquivo(&insere, "r+", "insere.bin");
+    abreArquivo(&arq_busca_p, "r", "busca_p.bin");
     
     //salva o registro do arquivo para memória principal
     char buffer_insere[TAM_REG_ENTRADA];
+    
+    //salva o registro do arquivo para memória principal
+    char buffer_busca_p[4];
     
     //percorre as posições da struct
     int j = 0;
@@ -426,5 +551,19 @@ void carregaArquivos(struct cadastro *cadastro, int quant_registros_insere){
         j++;
     }
     
+    j = 0;
+    
+    //enquanto houver registros
+    while (j < quant_registros_busca_p){
+        
+        //le o registro do arquivo e passa para memória principal para ser manipulado
+        fread(&buffer_busca_p,sizeof(char),4,arq_busca_p);
+        
+        strcpy(busca_p[j].cod_segurado, &buffer_busca_p[0]);
+        
+        j++;
+    }
+    
+    fclose(arq_busca_p);
     fclose(insere);
 }

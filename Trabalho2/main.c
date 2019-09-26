@@ -13,10 +13,21 @@ int main(void)
     //guarda a quantidade de registros a serem inseridos
     int quant_registros_insere = contaRegistrosEntrada();
     
+    //guarda a quantidade de registros a serem consultados por chave primária
+    int quant_registros_busca_p = contaRegistrosBusca_p();
+    
+    //declara a struct busca_p
+    struct busca_p busca_p[quant_registros_busca_p];
+    
     //declara a struct index
     struct index index[quant_registros_insere];
     
+    //declara a struct cadastro
+    struct cadastro cadastro[quant_registros_insere];
+    
     //seta todas as posições como '\0'
+    memset(&cadastro,(char)'\0',sizeof(cadastro));
+    memset(&busca_p,(char)'\0',sizeof(busca_p));
     memset(&index,(char)'\0',sizeof(index));
     
     //cria o indice quando o programa é inicializado
@@ -24,12 +35,6 @@ int main(void)
     
     //ordena o indice
     keysortIndice(index, quant_registros_insere);
-    
-    //declara a struct cadastro
-    struct cadastro cadastro[quant_registros_insere];
-    
-    //seta todas as posições como '\0'
-    memset(&cadastro,(char)'\0',sizeof(cadastro));
     
     int opcao = 0;
     
@@ -47,14 +52,16 @@ int main(void)
         
         switch (opcao) {
             case 1:
-                if (arquivoCarregado(cadastro)){
+                if (arquivoCarregado(cadastro, busca_p, 1)){
                     insereRegistro(cadastro, index);
                     keysortIndice(index, quant_registros_insere);
                 }
                 break;
                 
             case 2:
-                printf("Procurar por Codigo de Segurado nao implementado.\n");
+                if (arquivoCarregado(cadastro, busca_p, 2)){
+                    buscaChavePrimaria(index, busca_p);
+                }
                 break;
                 
             case 3:
@@ -66,7 +73,7 @@ int main(void)
                 break;
                 
             case 5:
-                carregaArquivos(cadastro, quant_registros_insere);
+                carregaArquivos(cadastro, busca_p, quant_registros_insere, quant_registros_busca_p);
                 break;
                 
             case 6:
